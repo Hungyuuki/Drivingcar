@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="rider.js"></script>
+    <script src="Shocker.js"></script>
+    <script src="coin.js"></script>
+</head>
+<body>
+<canvas id="myCanvas" style="border: solid 1px" width="1500" height="700"></canvas>
+<input type="text" disabled id = "score" value="0">Tổng số lần đạp trúng
+<script>
+    let score = 0;
+    let canvas = document.getElementById("myCanvas");
+    let ctx = canvas.getContext('2d');
+    let myShocker= new Shocker(0, 0, 100, 100, 10, 'img/Shocker/Shocker.png');
+        myShocker.drawShocker(ctx);
+    let myRider = new Rider(0, 0, 100, 120, 10, 'img/Ichigo/normal/Ichigo_normal1.png')
+        myRider.drawRider(ctx);
+    let myCoin = new Coin(40, 40, 0, 2*Math.PI,'img/coinSuperMario.png')
+        myCoin.drawCoin(ctx);
+
+
+    function moveRider(event) {
+        switch (event.keyCode) {
+            case 65: {
+                myRider._img='img/Ichigo/Rider kick/Ichigo_rider_left_kick.png'
+                if (myRider.x < 0) {
+                    return;
+                }
+                myRider.moveLeft();
+                break;
+            }
+            case 68: {
+                myRider._img='img/Ichigo/Rider kick/Ichigo_rider_right_kick.png'
+                if (myRider.x + myRider.width/2 > canvas.clientWidth) {
+                    return;
+                }
+                myRider.moveRight();
+                break
+            }
+            case 87: {
+                myRider._img='img/Ichigo/normal/Ichigo_normal1.png'
+                if (myRider.y < 0) {
+                    return;
+                }
+                myRider.moveUp();
+                break;
+            }
+            case 83: {
+                myRider._img='img/Ichigo/victory/Ichigo_victory_jump.png'
+                if (myRider.y + myRider.height/2 > canvas.clientHeight) {
+                    return;
+                }
+                myRider.moveDown();
+                break;
+            }
+            case 69: {
+                myRider.upSpeed();
+                break;
+            }
+        }
+        if (checkKick()){
+            alert('Rider kick');
+            score++;
+            document.getElementById('score').value =score;
+        }
+        updateCanvas();
+    }
+        function dropShocker(){
+        if (myShocker._y > canvas.clientHeight){
+            myShocker._y = 0
+            myShocker._x = Math.random()*canvas.clientWidth;
+        }
+            myShocker.moveDown()
+            updateCanvas()
+        }
+
+    function dropCoin(){
+        if (myCoin._y > canvas.clientHeight){
+            myCoin._y = 0
+            myCoin._x = Math.random()*canvas.clientWidth
+        }
+        myCoin.moveDown()
+        updateCanvas()
+        }
+
+        function updateCanvas() {
+                clearCanvas();
+                myRider.drawRider(ctx);
+                myShocker.drawShocker(ctx);
+                myCoin.drawCoin(ctx)
+        }
+
+     updateCanvas()
+
+        //requestAnimationFrame(dropShocker)
+    setInterval(dropShocker, 100)
+    setInterval(dropCoin, 100)
+
+
+    function clearCanvas(){
+        ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight)
+    }
+
+    document.addEventListener('keydown', moveRider);
+
+
+
+    function checkKick(){    //kiểm tra đá, nếu đá trúng trả về true, ko trúng trả về false//
+        if ((myRider.x > myShocker.x && myRider.x < myShocker.x + myShocker.width && myRider.y + myRider.height/2 === myShocker.y)
+        ||(myRider.x + myRider.width >   myShocker.x && myRider.x + myRider.width < myShocker.x + myShocker.width && myRider.y + myRider.height/2 === myShocker.y )){
+            return true;
+        }   return false;
+    }
+
+</script>
+</body>
+</html>
