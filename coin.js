@@ -1,27 +1,23 @@
 class Coin {
-    constructor(x, y, radius, color) {
+
+    constructor(x, y, width, height, speed, img) {
         this._x = x;
         this._y = y;
-        this._radius = radius;
-        this._color = color;
+        this._width = width;
+        this._height = height;
+        this._speed = speed;
+        this._img = img;
     }
-
-    _radius;
-    _color;
     _x;
     _y;
+    _width;
+    _height;
+    _speed;
     _img;
-
     drawCoin(ctx) {
-        let image = new Image();
-        image.src = this._img;
-
-        ctx.beginPath();
-        ctx.fillStyle = this._color;
-        /*let randomX = Math.random() * canvas.clientWidth;
-        let randomY = Math.random() * canvas.clientHeight;*/
-        ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-        ctx.fill();
+         let image = new Image();
+         image.src = this._img;
+         ctx.drawImage(image, this.x, this.y, this._width, this._height)
     }
 
     get x() {
@@ -39,13 +35,12 @@ class Coin {
     set y(value) {
         this._y = value;
     }
-
-    get radius() {
-        return this._radius;
+    get speed() {
+        return this._speed;
     }
 
-    set radius(value) {
-        this._radius = value;
+    set speed(value) {
+        this._speed = value;
     }
 
     get img() {
@@ -55,11 +50,19 @@ class Coin {
     set img(value) {
         this._img = value;
     }
+    get width() {
+        return this._width;
+    }
 
-    moveDown() {
-        /*  if (this.y + this._height > canvas.clientHeight) {
-              return;
-          }*/
-        this._y += 5;
+    set width(value) {
+        this._width = value;
+    }
+
+    get height() {
+        return this._height;
+    }
+
+    set height(value) {
+        this._height = value;
     }
 }

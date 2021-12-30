@@ -6,115 +6,253 @@
     <script src="rider.js"></script>
     <script src="Shocker.js"></script>
     <script src="coin.js"></script>
+    <script src="avatar.js"></script>
+    <script src="punchEffect.js"></script>
 </head>
 <body>
-<canvas id="myCanvas" style="border: solid 1px" width="1500" height="700"></canvas>
-<input type="text" disabled id = "score" value="0">Tổng số lần đạp trúng
+<canvas id="myCanvas" style="border: solid 1px" width="1600" height="800"></canvas>
 <script>
     let score = 0;
+    let coin = 0;
     let canvas = document.getElementById("myCanvas");
     let ctx = canvas.getContext('2d');
-    let myShocker= new Shocker(0, 0, 100, 100, 10, 'img/Shocker/Shocker.png');
-        myShocker.drawShocker(ctx);
-    let myRider = new Rider(0, 0, 100, 120, 10, 'img/Ichigo/normal/Ichigo_normal1.png')
-        myRider.drawRider(ctx);
-    let myCoin = new Coin(40, 40, 0, 2*Math.PI,'img/coinSuperMario.png')
-        myCoin.drawCoin(ctx);
 
+    let myShocker = new Shocker(1500, 555, 80, 100, 10, 'img/Shocker/Shocker.png');
+    myShocker.drawShocker(ctx);
+    let myRider = new Rider(50, 540, 100, 120, 10, 'img/Ichigo/normal/Ichigo_normal1.png')
+    myRider.drawRider(ctx);
+    let myCoin = new Coin(500, 500, 100, 100, 10, 'img/coinSuperMario.png')
+    myCoin.drawCoin(ctx);
+    let myAvatar = new Avatar(50, 70, 50, 60, 20, 'img/Ichigo/Ichigo_avatar.png');
+    myAvatar.drawAvatar(ctx);
+    let myRiderPunch = new Rider((myRider._x + myRider._width), (myRider._y + 50), 35, 30 )
+    myRider.drawRiderPunch(ctx);
+    let myPunchEffect = new Rider((myRider._x + myRider._width), (myRider._y + 50), 60, 60)
+    myRider.drawEffect(ctx)
+    let intervalId;
+    let imgBG = new Image();
+    updateCanvas()
+
+
+    /*Tập hợp các hàm điều khiển myRider*/
+    function moveCharacter() {   /*Khi di chuyển thì hiện 2 ảnh bước 2 chân trái phải*/
+        myRider._img = 'img/Ichigo/Run/Ichigo_leftstep.png'
+        updateCanvas();
+        setTimeout(function () {
+            myRider._img = 'img/Ichigo/Run/Ichigo_rightstep.png'
+            updateCanvas();
+        }, 50)
+    }
+
+    function doNothing() {
+        myRider._img = 'img/Ichigo/normal/Ichigo_normal1.png'
+        updateCanvas();
+        setTimeout(function () {
+            myRider._img = 'img/Ichigo/normal/Ichigo_normal2.png'
+            updateCanvas();
+            requestAnimationFrame(doNothing);
+        }, 500)
+    }
 
     function moveRider(event) {
         switch (event.keyCode) {
-            case 65: {
-                myRider._img='img/Ichigo/Rider kick/Ichigo_rider_left_kick.png'
+            case 65: {   /*press A to move left */
+                moveCharacter()
                 if (myRider.x < 0) {
                     return;
                 }
                 myRider.moveLeft();
+                myRiderPunch.x = myRider._x + myRider._width;
+                myPunchEffect.x = myRider._x + myRider._width;
                 break;
             }
-            case 68: {
-                myRider._img='img/Ichigo/Rider kick/Ichigo_rider_right_kick.png'
-                if (myRider.x + myRider.width/2 > canvas.clientWidth) {
+            case 68: { /*press D to move right*/
+                moveCharacter();
+                if (myRider.x + myRider.width / 2 > canvas.clientWidth) {
                     return;
                 }
                 myRider.moveRight();
+                myRiderPunch.x = myRider._x + myRider._width;
+                myPunchEffect.x = myRider._x + myRider._width;
                 break
             }
-            case 87: {
-                myRider._img='img/Ichigo/normal/Ichigo_normal1.png'
-                if (myRider.y < 0) {
+            case 87: { /*press S to do nothing*/
+                myRider._img = 'img/Ichigo/Rider Jump/Ichigo_jump up.png'
+                break;
+            }
+            case 83: { /*press W to change image*/
+                myRider._img = 'img/Ichigo/Rider Jump/Ichigo_jump down.png'
+                if (myRider.y + myRider.height > 590) {
+                    myRiderPunch._img = 'img/Ichigo/normal/Ichigo_normal1.png'
                     return;
                 }
-                myRider.moveUp();
                 break;
             }
-            case 83: {
-                myRider._img='img/Ichigo/victory/Ichigo_victory_jump.png'
-                if (myRider.y + myRider.height/2 > canvas.clientHeight) {
-                    return;
-                }
-                myRider.moveDown();
-                break;
+            case 74:{ /*press J to punch */
+                myRider._img =  'img/Ichigo/normal/Ichigo_normal1.png'
+
+                setTimeout(function () {
+                    myRiderPunch._img = 'img/Ichigo/Punch/Ichigo_punch_right.png'
+                    updateCanvas()
+                    myRiderPunch._img = ''
+                }, 100)
             }
-            case 69: {
-                myRider.upSpeed();
+                updateCanvas()
                 break;
-            }
         }
-        if (checkKick()){
-            alert('Rider kick');
-            score++;
-            document.getElementById('score').value =score;
-        }
-        updateCanvas();
-    }
-        function dropShocker(){
-        if (myShocker._y > canvas.clientHeight){
-            myShocker._y = 0
-            myShocker._x = Math.random()*canvas.clientWidth;
-        }
-            myShocker.moveDown()
+
+
+        if (checkPunch()) {
+            myPunchEffect.drawEffect(ctx)
+            myPunchEffect._img = 'img/Ichigo/Punch/Ichigo_punch_effect.png'
             updateCanvas()
+            myPunchEffect._img = ""
+            score++;
+            document.getElementById('score').value = score;
         }
-
-    function dropCoin(){
-        if (myCoin._y > canvas.clientHeight){
-            myCoin._y = 0
-            myCoin._x = Math.random()*canvas.clientWidth
-        }
-        myCoin.moveDown()
         updateCanvas()
+
+        /*gain coin*/
+        if (getCoin()) {
+            coin++
+            document.getElementById('coin').value = coin;
         }
-
-        function updateCanvas() {
-                clearCanvas();
-                myRider.drawRider(ctx);
-                myShocker.drawShocker(ctx);
-                myCoin.drawCoin(ctx)
-        }
-
-     updateCanvas()
-
-        //requestAnimationFrame(dropShocker)
-    setInterval(dropShocker, 100)
-    setInterval(dropCoin, 100)
-
-
-    function clearCanvas(){
-        ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight)
+        updateCanvas()
     }
+
+    function jumpRider(event){
+        switch (event.keyCode){
+            case 32: {  /*Press Space to jump*/
+                myRider._img = "img/Ichigo/Rider Jump/Ichigo_jump_standby.png"
+                updateCanvas()
+                    if (isJumping) {
+                        break;
+                    }
+                    intervalId = setInterval(doJump, 50);
+                break;
+            }
+        }
+    }
+
+
+    let isJumping = false;
+    let jumpStepCount = 1;
+
+    function doJump() {
+        isJumping = true;
+        // nếu jumpStepCount <=20> thì moveUP
+        if (jumpStepCount <= 20) {
+            myRider.moveUp();
+        }
+        // nếu jumpStepCount > 20 thì moveDown
+        if (jumpStepCount > 20) {
+            myRider.moveDown();
+        }
+        // nếu jumpStepCount >=40 thì thoát interval
+        // và set lại jumpStepCount = 0, isJumping = false;
+        if (jumpStepCount >= 40) {
+            clearInterval(intervalId)
+            jumpStepCount = 0;
+            isJumping = false;
+        }
+        jumpStepCount++;
+        myRiderPunch.y = myRider.y + 50;
+    }
+
+
+    function dropShocker() {
+        if (checkPunch() ||checkmate()|| myShocker._width < 0) {
+            myShocker._x = 1600;
+            myShocker._y = 555;
+        }
+        myShocker.moveLeft()
+        updateCanvas()
+    }
+
+
+    function  dropCoin(){
+        if (getCoin()) {
+            myCoin._x = Math.random() * canvas.clientWidth;
+            myCoin._y = Math.floor(Math.random()*201) + 300;
+        }
+        updateCanvas()
+    }
+
+    function updateCanvas() {
+        clearCanvas();
+        imgBG.src = 'img/game background.png';
+        ctx.drawImage(imgBG, 0, 0, 1600, 800);
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, 1600, 150);
+        ctx.fillStyle = '#04B431';
+        ctx.font = "40px Arial";
+        ctx.fillText('RIDER MIGHTY FIGHTER', 50, 50);
+        ctx.font = "30px Arial";
+        ctx.fillText('RIDER PUNCH: ' + score, 1200, 50)
+        ctx.fillText('RIDER KICK: ', 1200, 80)
+        ctx.fillText('RIDER COIN: ' + coin, 1200, 110)
+        myAvatar.drawAvatar(ctx);
+        myRider.drawRider(ctx);
+        myShocker.drawShocker(ctx);
+        myCoin.drawCoin(ctx);
+        myRiderPunch.drawRiderPunch(ctx);
+        myPunchEffect.drawEffect(ctx);
+
+    }
+
+    // requestAnimationFrame(dropShocker);
+    // requestAnimationFrame(dropCoin);
+    // requestAnimationFrame(doNothing);
+    setInterval(dropShocker, 100)
+    setInterval(dropCoin, 5000)
+    setInterval(doNothing, 700)
+
+
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight)
+    }
+
 
     document.addEventListener('keydown', moveRider);
+    document.addEventListener('keyup', jumpRider);
 
 
-
-    function checkKick(){    //kiểm tra đá, nếu đá trúng trả về true, ko trúng trả về false//
-        if ((myRider.x > myShocker.x && myRider.x < myShocker.x + myShocker.width && myRider.y + myRider.height/2 === myShocker.y)
-        ||(myRider.x + myRider.width >   myShocker.x && myRider.x + myRider.width < myShocker.x + myShocker.width && myRider.y + myRider.height/2 === myShocker.y )){
+    function checkPunch() {    //kiểm tra đá, nếu đá trúng mặt của shocker trả về true, ko trúng trả về false//
+        if ((Math.abs( myRiderPunch.x - myShocker.x) <= myRiderPunch.width / 2 + myShocker.width / 2) &&
+            Math.abs( myRiderPunch.y - myShocker.y) <= myRiderPunch.height / 2 + myShocker.height / 2) {
             return true;
-        }   return false;
+        }
+        return false;
     }
 
+    function checkmate(){   //kiểm tra chạm, nếu chạm trúng mặt của shocker trả về true, ko trúng trả về false//
+        if ((Math.abs( myRider.x - myShocker.x) <= myRider.width / 2 + myShocker.width / 2) &&
+            Math.abs( myRider.y - myShocker.y) <= myRider.height / 2 + myShocker.height / 2) {
+            return true;
+        }
+        return false;
+    }
+
+    function getCoin() {    //Kiểm tra coin nếu ăn coin thì coin khác xuất hiện//
+        if ((Math.abs(myRider.x - myCoin.x) <= myRider.width / 2 + myCoin.width / 2) &&
+            Math.abs(myRider.y - myShocker.y) <= myRider.height / 2 + myCoin.height / 2) {
+            return true;
+        }
+        return false;
+    }
+
+    /*
+       Thêm tính năng: khi thực hiện nhảy thì hiện ra màn hình tọa độ x, y của nhân vật.
+       Thêm tính năng: "Rider Kick" có khả năng đá mạnh hơn đá thường(gây mất máu nhiều hơn 2 lần đá thường)
+       Thêm tính năng: Ăn 5 coin lơ lửng hoặc 1 coin rơi thì đủ điều kiện sử dụng 1 Rider kick.
+       Thêm tính năng: Thanh máu hình chữ nhật có 5 máu.
+       Thêm tính năng: Bị Shoker chạm vào trong lúc không tấn công thì sẽ bị trừ 1 máu, mất máu 5 lần sẽ hiện ảnh
+       bị shocker nuốt và Game Over
+
+       Sửa lại game: Thêm coin lơ lửng.
+       Khi đánh xong 20 lính Shocker thì Rider Nigo xuất hiện với 10 máu, khả năng của Nigo là di chuyển nhanh hơn
+       2 lần lính Shocker(nếu code được khả năng ra đòn tùy ý của Nigo thì càng tốt)
+     */
 </script>
 </body>
 </html>

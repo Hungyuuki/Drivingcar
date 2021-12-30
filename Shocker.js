@@ -62,23 +62,13 @@ class Shocker {
     set img(value) {
         this._img = value;
     }
-    moveDown() {
-      /*  if (this.y + this._height > canvas.clientHeight) {
-            return;
-        }*/
-        this._y += 10;
+    moveLeft() {
+        this._x -= 10;
     }
 
     drawShocker(ctx) {
-
         let image = new Image();
         image.src = this._img;
-        //image.onload = () => {
-            // ctx.drawImage(image, this._x, this._y, this._width, this._height)
-
-            let topLeftX = this._x - this._width / 2;
-            let topLeftY = this._y - this._height / 2;
-            ctx.drawImage(image, topLeftX, topLeftY, this._width, this._height)
-        }
-   // }
+        ctx.drawImage(image, this._x, this._y, this._width, this._height)
+    }
 }
